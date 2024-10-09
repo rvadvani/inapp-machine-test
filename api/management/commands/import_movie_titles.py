@@ -1,8 +1,7 @@
 import csv
+from api.sqlalchemy_config import session
 from api.models import Movie
 from django.core.management.base import BaseCommand
-
-# python manage.py import_movie_titles
 
 class Command(BaseCommand):
     help = 'Importing movie titles ...'
@@ -12,6 +11,7 @@ class Command(BaseCommand):
         with open('/home/vikramaditya/Downloads/title.basics.tsv', 'r', encoding='utf-8') as movies_file:
             reader = csv.DictReader(movies_file, delimiter='\t')
             for row in reader:
+                
                 movie = Movie(
                     tconst=row['tconst'],
                     title_type=row['titleType'],
@@ -23,7 +23,14 @@ class Command(BaseCommand):
                     runtime_minutes=int(row['runtimeMinutes']) if row['runtimeMinutes'] and row['runtimeMinutes'] != '\\N' else None,
                     genres=row['genres']
                 )
-                movie.save()
-                self.stdout.write(self.style.SUCCESS(f'Imported tconst: {movie.tconst} and primary_title: {movie.primary_title}'))
+
+                
+                session.add(movie)
+
+                
+                self.stdout.write(self.style.SUCCESS(f'Prepared to import tconst: {movie.tconst} and primary_title: {movie.primary_title}'))
+
+            
+            session.commit()
+
         self.stdout.write(self.style.SUCCESS('All the titles imported successfully!'))
-        
